@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title></title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="css/style.css" rel="stylesheet">
+  </head>
+  <body>
+    Hello from template
+    <form action="{%url 'index' %}" method="post">
+      {%csrf_token%}
+      <div>
+        <h3>Marital Status</h3>
+        <input checked type="radio" id="single" name="maritalStatus" value="single"/>
+        <label for="single">Single</label>
+        <input type="radio" name="maritalStatus" id="couple" value="couple"/>
+        <label for="couple">Couple</label>
+      </div>
+      <div>
+        <h3>Income</h3>
+        <input required type="number" min="0" name="income" placeholder="Yearly Income">
+        <input required type="number" min="0" name="festivalBonus" placeholder="Festival Bonus">
+        <input required type="number" min="0" name="allowance" placeholder="Allowance">
+        <input required type="number" min="0" name="others" placeholder="Extra income">
+      </div>
+      <div>
+        <h3>Deduction</h3>
+        <input checked type="radio" id="providentFund" name="pf_or_ssf" value="pf"/>
+        <label for="providentFund">Provident Fund</label>
+        <input type="radio" id="socialSecurityFund" name="pf_or_ssf" value="ssf"/>
+        <label for="socialSecurityFund">Social Security Fund</label>
+        <input required type="number" min="0" name="pf_or_ssf_amount" id="pf_or_ssf_amount" placeholder="PF/SSF">
+        <input required type="number" min="0" name="citizenInvestmentFund" placeholder="Citizen Investment Fund">
+        <input required type="number" min="0" name="lifeInsurance" placeholder="Life Insurance">
+        <input required type="number" min="0" name="medicalInsurance" placeholder="Medical Insurance">
+      </div>
+      <div>
+        <input type="submit">
+      </div>
+    </form>
+    {% load static %}
+    <script src="{% static 'personal_income_tax/index.js' %}"></script>
+  </body>
+</html>
