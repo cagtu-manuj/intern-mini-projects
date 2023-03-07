@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from .models import TaxCalculator
+from .models import UserTaxInformation
 
 
 # Create your views here.

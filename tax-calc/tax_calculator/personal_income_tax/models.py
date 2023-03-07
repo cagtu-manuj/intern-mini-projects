@@ -171,6 +171,10 @@ class TaxCalculator:
     def calculate_total_tax(self):
         total_taxable_income = self.calculate_total_taxable_income()
         total_tax = 0
+
+        tax_information_pf = [(500000, 0.01)]
+        tax_information_ssf = [(500000, 0)]
+
         tax_information_single = [
             (200000, 0.1),
             (300000, 0.2),
@@ -183,12 +187,19 @@ class TaxCalculator:
             (900000, 0.3),
             (2000000, 0.36),
         ]
-        # tax_information_single = [(200000, 0.1), (300000, 0.2), (900000, 0.3), (0, 0.36)]
+        if self.pf_or_ssf == "pf":
+            for bracket, rate in tax_information_pf:
+                if total_taxable_income <= 0:
+                    break
+                total_tax += rate * min(total_taxable_income, bracket)
+                total_taxable_income -= bracket
+        else:
+            for bracket, rate in tax_information_ssf:
+                if total_taxable_income <= 0:
+                    break
+                total_tax += rate * min(total_taxable_income, bracket)
+                total_taxable_income -= bracket
         if self.marital_status == "single":
-            if total_taxable_income > 0:
-                if self.pf_or_ssf == "pf":
-                    total_tax += 0.01 * min(total_taxable_income, 500000)
-                total_taxable_income -= 500000
             for bracket, rate in tax_information_single:
                 if total_taxable_income <= 0:
                     break
@@ -196,11 +207,6 @@ class TaxCalculator:
                 total_taxable_income -= bracket
 
         else:
-            if total_taxable_income > 0:
-                if self.pf_or_ssf == "pf":
-                    total_tax += 0.01 * min(total_taxable_income, 500000)
-                total_taxable_income -= 500000
-
             for bracket, rate in tax_information_couple:
                 if total_taxable_income <= 0:
                     break
