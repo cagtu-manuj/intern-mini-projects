@@ -19,28 +19,35 @@ class UserTaxInformation(models.Model):
     marital_status = models.CharField(
         max_length=10, choices=MARITAL_STATUS_CHOICES, default=SINGLE
     )
-    pf_or_ssf = models.CharField(max_length=3, choices=PF_OR_SSF_CHOICES, default=PF)
+    pf_or_ssf = models.CharField(
+        max_length=3, choices=PF_OR_SSF_CHOICES, default=PF)
     income = models.DecimalField(decimal_places=3, max_digits=15, default=0)
-    festival_bonus = models.DecimalField(decimal_places=3, max_digits=15, default=0)
+    festival_bonus = models.DecimalField(
+        decimal_places=3, max_digits=15, default=0)
     allowance = models.DecimalField(decimal_places=3, max_digits=15, default=0)
     others = models.DecimalField(decimal_places=3, max_digits=15, default=0)
-    pf_or_ssf_amount = models.DecimalField(decimal_places=3, max_digits=15, default=0)
+    pf_or_ssf_amount = models.DecimalField(decimal_places=3, max_digits=15,
+                                           default=0)
     citizen_investment_fund = models.DecimalField(
         decimal_places=3, max_digits=15, default=0
     )
-    life_insurance = models.DecimalField(decimal_places=3, max_digits=15, default=0)
-    medical_insurance = models.DecimalField(decimal_places=3, max_digits=15, default=0)
+    life_insurance = models.DecimalField(
+        decimal_places=3, max_digits=15, default=0)
+    medical_insurance = models.DecimalField(
+        decimal_places=3, max_digits=15, default=0)
 
-    total_income = models.DecimalField(decimal_places=3, max_digits=15, default=0)
-    deductions = models.DecimalField(decimal_places=3, max_digits=15, default=0)
+    total_income = models.DecimalField(
+        decimal_places=3, max_digits=15, default=0)
+    deductions = models.DecimalField(
+        decimal_places=3, max_digits=15, default=0)
     total_taxable_income = models.DecimalField(
         decimal_places=3, max_digits=15, default=0
     )
     total_tax = models.DecimalField(decimal_places=3, max_digits=15, default=0)
 
 
-class TaxInformation(models.Model):
-    year = models.IntegerField(primary_key=True)
+class DeductionInformation(models.Model):
+    year = models.IntegerField()
     pf_deduction_rate = models.DecimalField(
         decimal_places=3, max_digits=14, default=0.1
     )
@@ -54,70 +61,29 @@ class TaxInformation(models.Model):
         decimal_places=3, max_digits=15, default=500000
     )
 
-    first_bracket_limit_single = models.DecimalField(
-        decimal_places=3, max_digits=15, default=500000
-    )
-    first_bracket_limit_couple = models.DecimalField(
-        decimal_places=3, max_digits=15, default=500000
-    )
-    first_bracket_rate_pf = models.DecimalField(
-        decimal_places=3, max_digits=15, default=0.01
-    )
-    first_bracket_rate_ssf = models.DecimalField(
-        decimal_places=3, max_digits=15, default=0
-    )
 
-    second_bracket_limit_single = models.DecimalField(
-        decimal_places=3, max_digits=15, default=200000
-    )
-    second_bracket_rate_single = models.DecimalField(
-        decimal_places=3, max_digits=15, default=0.1
-    )
-    second_bracket_limit_couple = models.DecimalField(
-        decimal_places=3, max_digits=15, default=200000
-    )
-    second_bracket_rate_single = models.DecimalField(
-        decimal_places=3, max_digits=15, default=0.1
-    )
-
-    third_bracket_limit_single = models.DecimalField(
-        decimal_places=3, max_digits=15, default=200000
-    )
-    third_bracket_rate_single = models.DecimalField(
-        decimal_places=3, max_digits=15, default=0.1
-    )
-    third_bracket_limit_couple = models.DecimalField(
-        decimal_places=3, max_digits=15, default=200000
-    )
-    third_bracket_rate_single = models.DecimalField(
-        decimal_places=3, max_digits=15, default=0.1
-    )
-
-    fourth_bracket_limit_single = models.DecimalField(
-        decimal_places=3, max_digits=15, default=200000
-    )
-    fourth_bracket_rate_single = models.DecimalField(
-        decimal_places=3, max_digits=15, default=0.1
-    )
-    fourth_bracket_limit_couple = models.DecimalField(
-        decimal_places=3, max_digits=15, default=200000
-    )
-    fourth_bracket_rate_single = models.DecimalField(
-        decimal_places=3, max_digits=15, default=0.1
-    )
-
-    fifth_bracket_limit_single = models.DecimalField(
-        decimal_places=3, max_digits=15, default=200000
-    )
-    fifth_bracket_rate_single = models.DecimalField(
-        decimal_places=3, max_digits=15, default=0.1
-    )
-    fifth_bracket_limit_couple = models.DecimalField(
-        decimal_places=3, max_digits=15, default=200000
-    )
-    fifth_bracket_rate_single = models.DecimalField(
-        decimal_places=3, max_digits=15, default=0.1
-    )
+class BracketInformation(models.Model):
+    year = models.IntegerField()
+    limit = models.DecimalField(decimal_places=3, max_digits=15, default=0)
+    difference = models.DecimalField(
+        decimal_places=3, max_digits=15, default=0)
+    rate = models.DecimalField(decimal_places=3, max_digits=15, default=0)
+    PF = "pf"
+    SSF = "ssf"
+    PF_OR_SSF_CHOICES = [
+        (PF, "pf"),
+        (SSF, "ssf"),
+    ]
+    COUPLE = "Couple"
+    SINGLE = "Single"
+    MARITAL_STATUS_CHOICES = [
+        (COUPLE, "Couple"),
+        (SINGLE, "Single"),
+    ]
+    pf_or_ssf = models.CharField(
+        max_length=3, choices=PF_OR_SSF_CHOICES, blank=True)
+    single_or_couple = models.CharField(
+        max_length=6, choices=MARITAL_STATUS_CHOICES, blank=True)
 
 
 class TaxCalculator:
@@ -175,6 +141,7 @@ class TaxCalculator:
         tax_information_pf = [(500000, 0.01)]
         tax_information_ssf = [(500000, 0)]
 
+        # todo replace 200000 by a very large number
         tax_information_single = [
             (200000, 0.1),
             (300000, 0.2),
