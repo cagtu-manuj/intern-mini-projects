@@ -20,30 +20,27 @@ class UserTaxInformation(models.Model):
         max_length=10, choices=MARITAL_STATUS_CHOICES, default=SINGLE
     )
     pf_or_ssf = models.CharField(
-        max_length=3, choices=PF_OR_SSF_CHOICES, default=PF)
-    income = models.DecimalField(decimal_places=3, max_digits=15, default=0)
+        max_length=3, choices=PF_OR_SSF_CHOICES, default=SSF)
+    income = models.DecimalField(
+        decimal_places=3, max_digits=15, default=1440000)
     festival_bonus = models.DecimalField(
-        decimal_places=3, max_digits=15, default=0)
-    allowance = models.DecimalField(decimal_places=3, max_digits=15, default=0)
-    others = models.DecimalField(decimal_places=3, max_digits=15, default=0)
+        decimal_places=3, max_digits=15, default=120000)
+    allowance = models.DecimalField(
+        decimal_places=3, max_digits=15, default=960000)
+    others = models.DecimalField(
+        decimal_places=3, max_digits=15, default=393000)
     pf_or_ssf_amount = models.DecimalField(decimal_places=3, max_digits=15,
-                                           default=0)
+                                           default=446400)
     citizen_investment_fund = models.DecimalField(
-        decimal_places=3, max_digits=15, default=0
+        decimal_places=3, max_digits=15, default=300000
     )
     life_insurance = models.DecimalField(
-        decimal_places=3, max_digits=15, default=0)
+        decimal_places=3, max_digits=15, default=100000)
     medical_insurance = models.DecimalField(
-        decimal_places=3, max_digits=15, default=0)
+        decimal_places=3, max_digits=15, default=18000)
 
-    total_income = models.DecimalField(
-        decimal_places=3, max_digits=15, default=0)
-    deductions = models.DecimalField(
-        decimal_places=3, max_digits=15, default=0)
-    total_taxable_income = models.DecimalField(
-        decimal_places=3, max_digits=15, default=0
-    )
-    total_tax = models.DecimalField(decimal_places=3, max_digits=15, default=0)
+    def __str__(self):
+        return f"{self.marital_status}: {self.pf_or_ssf}"
 
 
 class DeductionInformation(models.Model):
@@ -61,12 +58,16 @@ class DeductionInformation(models.Model):
         decimal_places=3, max_digits=15, default=500000
     )
 
+    def __str__(self):
+        return f"{self.year}"
+
 
 class BracketInformation(models.Model):
-    year = models.IntegerField()
-    limit = models.DecimalField(decimal_places=3, max_digits=15, default=0)
+    year = models.IntegerField(default=2079)
+    limit = models.DecimalField(
+        decimal_places=3, max_digits=15, default=0, null=True, blank=True)
     difference = models.DecimalField(
-        decimal_places=3, max_digits=15, default=0)
+        decimal_places=3, max_digits=15, default=0, null=True, blank=True)
     rate = models.DecimalField(decimal_places=3, max_digits=15, default=0)
     PF = "pf"
     SSF = "ssf"
@@ -84,6 +85,9 @@ class BracketInformation(models.Model):
         max_length=3, choices=PF_OR_SSF_CHOICES, blank=True)
     single_or_couple = models.CharField(
         max_length=6, choices=MARITAL_STATUS_CHOICES, blank=True)
+
+    def __str__(self):
+        return f"{self.year}: {self.rate}"
 
 
 class TaxCalculator:

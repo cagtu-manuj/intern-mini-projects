@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from .models import TaxCalculator
 from .models import UserTaxInformation
+from django.db.models import F
 
 
 # Create your views here.
@@ -15,7 +16,8 @@ def index(request):
 
         pf_or_ssf = request.POST.get("pf_or_ssf")
         pf_or_ssf_amount = float(request.POST.get("pf_or_ssf_amount"))
-        citizenInvestmentFund = float(request.POST.get("citizenInvestmentFund"))
+        citizenInvestmentFund = float(
+            request.POST.get("citizenInvestmentFund"))
         lifeInsurance = float(request.POST.get("lifeInsurance"))
         medicalInsurance = float(request.POST.get("medicalInsurance"))
 
@@ -36,6 +38,9 @@ def index(request):
         total_deductions = tax_calculator.calculate_deductions()
         total_taxable_income = tax_calculator.calculate_total_taxable_income()
         total_tax_per_year = tax_calculator.calculate_total_tax()
+
+        # total_salary = UserTaxInformation.objects.annotate(
+        #     total=F('income')+F('festival_bonus') + F('allowance') + F('others'))
 
         print(f"total_income: {total_income}")
         print(f"total_deductions: {total_deductions}")
