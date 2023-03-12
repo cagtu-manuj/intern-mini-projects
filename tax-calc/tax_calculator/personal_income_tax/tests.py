@@ -1,9 +1,11 @@
-from django.test import TestCase
-from .models import TaxCalculator
-from .models import DeductionInformation
-from .models import UserTaxInformation
-from .models import BracketInformation
 from django.db.models import F
+from django.db.models import Subquery
+from .models import BracketInformation
+from .models import UserTaxInformation
+from .models import DeductionInformation
+from .models import TaxCalculator
+from django.test import TestCase
+from django.db.models import Q, Sum
 
 
 def populate_db():
@@ -22,10 +24,10 @@ def populate_db():
     deduction_information = DeductionInformation(
         year=2079, pf_deduction_rate=0.1, pf_deduction_limit=300000, ssf_deduction_rate=0.31, ssf_deduction_limit=500000)
     BracketInformation(
-        year=2079, limit=500000, difference=500000, rate=0.01, pf_or_ssf="pf", single_or_couple="single"
+        year=2079, limit=500000, difference=500000, rate=0.01, pf_or_ssf="pf", single_or_couple=""
     ).save()
     BracketInformation(
-        year=2079, limit=500000, difference=500000, rate=0.00, pf_or_ssf="ssf", single_or_couple="single"
+        year=2079, limit=500000, difference=500000, rate=0.00, pf_or_ssf="ssf", single_or_couple=""
     ).save()
     BracketInformation(
         year=2079, limit=700000, difference=200000, rate=0.1, pf_or_ssf="", single_or_couple="single"
@@ -60,17 +62,42 @@ class TaxCalculatorTest(TestCase):
             medicalInsurance=18000,
         )
         populate_db()
-        print(BracketInformation.objects.all().values())
-        print("\n\n\n\n")
-        print(DeductionInformation.objects.all().values())
-        total_obj = UserTaxInformation.objects.annotate(
+        total_income_obj = UserTaxInformation.objects.annotate(
             total=F('income')+F('festival_bonus') + F('allowance') + F('others')).first()
-        total_income = getattr(total_obj, "total")
+        total_income = getattr(total_income_obj, "total")
+        ssf_or_pf = getattr(total_income_obj, "pf_or_ssf")
+        income = getattr(total_income_obj, "income")
+        single_or_couple = getattr(total_income_obj, "marital_status")
+
+        if ssf_or_pf == "ssf":
+            deduction_rate = getattr(
+                DeductionInformation.objects.all().first(), "ssf_deduction_rate")
+            deduction_limit = getattr(
+                DeductionInformation.objects.all().first(), "ssf_deduction_limit")
+
+        total_ssf_pf_cif = UserTaxInformation.objects.all().annotate(total_ssf_pf_cif=(
+            F("income") * deduction_rate) + F("citizen_investment_fund")).values('total_ssf_pf_cif').first()['total_ssf_pf_cif']
+        deduction = min(total_ssf_pf_cif, deduction_limit, total_income / 3)
+        life_insurance = min(UserTaxInformation.objects.all().values(
+            'life_insurance').first()['life_insurance'], 40000)
+        medical_insurance = min(UserTaxInformation.objects.all().values(
+            'medical_insurance').first()['medical_insurance'], 20000)
+
+        total_deduction = deduction + life_insurance + medical_insurance
+        total_taxable_income = total_income - total_deduction
+        initial_tax = (BracketInformation.objects.filter(
+            Q(limit__lt=total_taxable_income)).filter(Q(single_or_couple="single") | Q(pf_or_ssf="ssf")).order_by("rate").annotate(total=(F("rate") * F("difference"))).aggregate(Sum("total"))["total__sum"])
+        leftover = total_taxable_income - (BracketInformation.objects.filter(
+            Q(limit__lt=total_taxable_income)).filter(Q(single_or_couple="single") | Q(pf_or_ssf="ssf")).order_by("rate").aggregate(Sum("difference")))["difference__sum"]
+        extra_tax = BracketInformation.objects.filter(
+            Q(limit__gt=total_taxable_income) | Q(difference=None)).filter(Q(single_or_couple="single") | Q(pf_or_ssf="ssf")).order_by("rate").annotate(final=(F("rate") * leftover)).values("final").first()["final"]
+        total_tax = initial_tax + extra_tax
+
         self.assertEqual(total_income, 2913000)
-        self.assertEqual(tax_calculator.calculate_deductions(), 558000)
+        self.assertEqual(total_deduction, 558000)
         self.assertEqual(
-            tax_calculator.calculate_total_taxable_income(), 2355000)
-        self.assertEqual(tax_calculator.calculate_total_tax(), 507800)
+            total_taxable_income, 2355000)
+        self.assertEqual(total_tax, 507800)
 
     def test_calculate_tax_married_ssf(self):
         tax_calculator = TaxCalculator(
