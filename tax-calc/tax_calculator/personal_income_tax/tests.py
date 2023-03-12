@@ -44,6 +44,7 @@ def populate_db():
 
     deduction_information.save()
     user_tax.save()
+    return user_tax.pk
 
 
 # Create your tests here.
@@ -61,9 +62,9 @@ class TaxCalculatorTest(TestCase):
             lifeInsurance=100000,
             medicalInsurance=18000,
         )
-        populate_db()
+        pk = populate_db()
         total_income_obj = UserTaxInformation.objects.annotate(
-            total=F('income')+F('festival_bonus') + F('allowance') + F('others')).first()
+            total=F('income')+F('festival_bonus') + F('allowance') + F('others')).get(pk=pk)
         total_income = getattr(total_income_obj, "total")
         ssf_or_pf = getattr(total_income_obj, "pf_or_ssf")
         income = getattr(total_income_obj, "income")
