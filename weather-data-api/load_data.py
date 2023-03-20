@@ -4,8 +4,9 @@ import time
 
 # read from files
 
-conn = psycopg2.connect(host="localhost", dbname="postgres",
-                        user="mk", password="acer1234", port=5432)
+conn = psycopg2.connect(
+    host="localhost", dbname="postgres", user="mk", password="acer1234", port=5432
+)
 
 cur = conn.cursor()
 
@@ -14,15 +15,18 @@ total_records = 0
 total_tables = 0
 for filename in os.listdir(os.path.join(os.getcwd(), "wx_data")):
     total_tables += 1
-    with open(os.path.join(os.getcwd(), "wx_data",  filename), 'r') as file:
-        table_name = str(file.name.split('/')[-1].split('.')[0])
+    with open(os.path.join(os.getcwd(), "wx_data", filename), "r") as file:
+        table_name = str(file.name.split("/")[-1].split(".")[0])
         cur.execute("DROP TABLE IF EXISTS %s" % table_name)
-        sql = cur.mogrify("""CREATE TABLE IF NOT EXISTS %s(
+        sql = cur.mogrify(
+            """CREATE TABLE IF NOT EXISTS %s(
             date INT NOT NULL UNIQUE,
             tmin INT,
             tmax INT,
             rain INT
-            );""" % (table_name))
+            );"""
+            % (table_name)
+        )
         cur.execute(sql)
         args = []
         for line in file.readlines():

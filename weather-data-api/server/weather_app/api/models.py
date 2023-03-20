@@ -1,8 +1,9 @@
 from django.db import models
 
 
+# datetime.date(1997, 10, 19
 class Weather(models.Model):
-    data = models.DateField(unique=True, null=False)
+    date = models.DateField(unique=True, null=False)
     tmin = models.IntegerField()
     tmax = models.IntegerField()
     rain = models.IntegerField()
