@@ -27,9 +27,10 @@ def run():
                 )
                 for record in df_records
             ]
-            Weather.objects.bulk_create(model_instances)
+            objs = Weather.objects.bulk_create(model_instances, ignore_conflicts=True)
+            total_records += len(objs)
 
     end_time = time.time()
     print(f"Total tables added: {total_tables}")
-    # print(f"Total rows added: {total_records}")
+    print(f"Total rows added: {total_records}")
     print(f"Total time: {end_time - start_time}")
