@@ -11,11 +11,15 @@ class Weather(models.Model):
     rain = models.IntegerField()
 
     class Meta:
-        # UniqueConstraint(fields=["station", "date"], name="unique_record")
         unique_together = ("date", "station")
 
 
 class Summary(models.Model):
+    station = models.CharField(max_length=15)
+    year = models.DateField(null=False)
     avg_tmin = models.FloatField(max_length=10)
     avg_tmax = models.FloatField(max_length=10)
     total_rain = models.IntegerField()
+
+    class Meta:
+        unique_together = ("year", "station")

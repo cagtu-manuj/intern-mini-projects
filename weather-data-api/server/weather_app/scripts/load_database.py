@@ -1,6 +1,8 @@
 import pandas as pd
 import datetime
-from api.models import Weather
+from api.models import Weather, Summary
+from django.db.models.functions import TruncYear
+from django.db.models import Avg, Sum
 import os
 import time
 
@@ -29,6 +31,24 @@ def run():
             ]
             objs = Weather.objects.bulk_create(model_instances, ignore_conflicts=True)
             total_records += len(objs)
+
+    queryset = (
+        Weather.objects.exclude(tmin=-9999, tmax=-9999, rain=-9999)
+        .annotate(year=TruncYear("date"))
+        .values("station", "year")
+        .annotate(avgMin=Avg("tmin"), avgMax=Avg("tmax"), totalRain=Sum("rain"))
+    ).values()
+    model_instances = [
+        Summary(
+            station=record["station"],
+            year=record["year"],
+            avg_tmin=record["avgMin"],
+            avg_tmax=record["avgMax"],
+            total_rain=record["totalRain"],
+        )
+        for record in queryset
+    ]
+    objs = Summary.objects.bulk_create(model_instances, ignore_conflicts=True)
 
     end_time = time.time()
     print(f"Total tables added: {total_tables}")
