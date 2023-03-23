@@ -1,14 +1,13 @@
-from rest_framework.response import Response
-from rest_framework.decorators import api_view
+from rest_framework import generics
+from .models import Weather, Summary
+from .serializers import WeatherSerializer, SummarySerializer
 
 
-@api_view(["GET"])
-def getWeatherData(request):
-    person = {"name": "Dennis", "age": 28}
-    return Response(person)
+class WeatherList(generics.ListCreateAPIView):
+    queryset = Weather.objects.all()
+    serializer_class = WeatherSerializer
 
 
-@api_view(["GET"])
-def getWeatherStats(request):
-    person = {"name": "Dennis", "age": 28}
-    return Response(person)
+class SummaryList(generics.ListCreateAPIView):
+    queryset = Summary.objects.all()
+    serializer_class = SummarySerializer
